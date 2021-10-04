@@ -1,0 +1,9 @@
+(executable
+  (name main)
+  (public_name main)
+  (libraries
+    core
+    domainslib
+    z3)
+  (modules main z3interface)
+  (flags (-cclib -lstdc++)))
