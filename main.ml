@@ -9,7 +9,11 @@ let set_running_state id state =
   Caml.Mutex.lock mutex;
   Array.set (Atomic.get running_states) id state;
   Caml.Mutex.unlock mutex
-let get_running_state id = Array.get (Atomic.get running_states) id
+let get_running_state id = 
+  Caml.Mutex.lock mutex;
+  let state = Array.get (Atomic.get running_states) id in 
+  Caml.Mutex.unlock mutex;
+  state
 let pool = Task.setup_pool ~num_additional_domains:2
 let rec call_z3 id=
   let ret = Z3interface.solve_smt2 id path in
@@ -19,7 +23,7 @@ let rec call_z3 id=
   set_running_state id false
 
 let rec loop_run_task i =
-  Gc.major(); (* call Gc.major in main loop *)
+  Gc.major(); (* Simulate gc that was called at some point in the main thread *)
   let _ = List.init i ~f:(fun id -> 
       if get_running_state id then None 
       else begin
