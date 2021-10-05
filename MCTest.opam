@@ -1,5 +1,5 @@
 opam-version: "2.0"
-name: "Test"
+name: "MCTest"
 version: "1.0"
 maintainer: "Gu Yu <guyu3204@gmail.cm>"
 authors: "Gu Yu <guyu3204@gmail.cm>"

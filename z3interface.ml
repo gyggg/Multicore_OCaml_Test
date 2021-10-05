@@ -27,17 +27,15 @@ let solve_smt2 id path =
   unlock mutex;
   Solver.reset solver; (** Reset current solver for a new solving *)
   let exprs1 = load_smt2 ctx path in (** Load Z3.expr form smt file *)
-  let exprs2 = load_smt2 ctx path in (** Load Z3.expr form smt file *)
   let ret = Solver.check solver exprs1 in 
   match ret with 
     Solver.SATISFIABLE -> 
-    let r = Solver.get_model solver in 
-    let _ = r in 
+    let _r = Solver.get_model solver in 
     print_endline @@ sprintf "[%d] sat" id;
+    None
   | Solver.UNSATISFIABLE -> 
-    let r = Solver.get_unsat_core solver in 
-    let _ = r in 
     print_endline @@ sprintf "[%d] unsat" id;
+    Some solver
   | Solver.UNKNOWN -> 
-    let _ = exprs2 in
     print_endline @@ sprintf "[%d] unknown" id;
+    None
