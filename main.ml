@@ -23,7 +23,7 @@ let rec call_z3 id=
   set_running_state id false
 
 let rec loop_run_task i =
-  Gc.major(); (* Simulate gc that was called at some point in the main thread *)
+  Gc.major(); (* To simulate that gc was called at some point in the main thread *)
   let _ = List.init i ~f:(fun id -> 
       if get_running_state id then None 
       else begin
