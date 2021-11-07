@@ -1,20 +1,19 @@
-open Core
 open Domainslib
 
 let max = 1
-let mutex = Caml.Mutex.create ()
+let mutex = Mutex.create ()
 let path = "benchmarks/test.smt2"
-let running_states = Atomic.make @@ Array.create ~len:(max + 1) false
+let running_states = Atomic.make @@ Array.create (max + 1) false
 let set_running_state id state = 
-  Caml.Mutex.lock mutex;
+  Mutex.lock mutex;
   Array.set (Atomic.get running_states) id state;
-  Caml.Mutex.unlock mutex
+  Mutex.unlock mutex
 let get_running_state id = 
-  Caml.Mutex.lock mutex;
+  Mutex.lock mutex;
   let state = Array.get (Atomic.get running_states) id in 
-  Caml.Mutex.unlock mutex;
+  Mutex.unlock mutex;
   state
-let pool = Task.setup_pool ~num_additional_domains:2
+let pool = Task.setup_pool ~num_additional_domains:2 ()
 let rec call_z3 id=
   let ret = Z3interface.solve_smt2 id path in
   begin match ret with 
@@ -24,7 +23,7 @@ let rec call_z3 id=
 
 let rec loop_run_task i =
   Gc.major(); (* To simulate that gc was called at some point in the main thread *)
-  let _ = List.init i ~f:(fun id -> 
+  let _ = List.init i (fun id -> 
       if get_running_state id then None 
       else begin
         set_running_state id true;
