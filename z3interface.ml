@@ -1,6 +1,5 @@
-open Core 
 open Z3 
-open Caml.Mutex
+open Mutex
 
 let load_smt2 ctx path =
   SMT.parse_smtlib2_file ctx path [] [] [] []
@@ -11,14 +10,13 @@ let new_instance id =
   let solver = Solver.mk_solver ctx None in 
   ctx, solver, id
 
-let instance_pool = Hashtbl.Poly.create ()
+let instance_pool = Hashtbl.create 100
 
 let get_instance (id:int) = 
-  match Hashtbl.Poly.find instance_pool id with 
-  | Some inst -> inst 
-  | None -> 
-    Hashtbl.Poly.set instance_pool ~key:id ~data:(new_instance id);
-    Hashtbl.Poly.find_exn instance_pool id
+  try Hashtbl.find instance_pool id 
+  with _ ->
+    Hashtbl.add instance_pool id (new_instance id);
+    Hashtbl.find instance_pool id
 let mutex = create () 
 
 let solve_smt2 id path =
@@ -31,11 +29,11 @@ let solve_smt2 id path =
   match ret with 
     Solver.SATISFIABLE -> 
     let _r = Solver.get_model solver in 
-    print_endline @@ sprintf "[%d] sat" id;
+    print_endline @@ Printf.sprintf "[%d] sat" id;
     None
   | Solver.UNSATISFIABLE -> 
-    print_endline @@ sprintf "[%d] unsat" id;
+    print_endline @@ Printf.sprintf "[%d] unsat" id;
     Some solver
   | Solver.UNKNOWN -> 
-    print_endline @@ sprintf "[%d] unknown" id;
+    print_endline @@ Printf.sprintf "[%d] unknown" id;
     None
